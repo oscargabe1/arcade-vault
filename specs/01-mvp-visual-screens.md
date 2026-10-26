@@ -78,7 +78,7 @@ Estructura: `lib/` y `components/` en la raíz (alias `@/*`). Páginas como Serv
 - [ ] `npm run build` termina sin errores.
 - [ ] `/` muestra 8 tarjetas; buscar "caí" deja 1; el chip PUZZLE deja 1; una búsqueda sin coincidencias muestra "NO HAY RESULTADOS".
 - [ ] Clic en una tarjeta navega a `/games/<id>` y muestra título, descripción larga, 3 stats y 10 filas de leaderboard.
-- [ ] `/games/id-inexistente` devuelve 404.
+- [ ] `/games/id-inexistente` muestra la página 404 (con `cacheComponents` el estado HTTP queda en 200 + `noindex`, comportamiento documentado de Next al hacer streaming).
 - [ ] "JUGAR AHORA" abre `/games/<id>/play`; el puntaje sube solo; PAUSA lo detiene y muestra "EN PAUSA"; REANUDAR lo retoma.
 - [ ] FIN abre el modal con la puntuación final; GUARDAR PUNTUACIÓN muestra "PUNTUACIÓN GUARDADA_" y añade una entrada en `localStorage.av_scores`; JUGAR DE NUEVO reinicia en 0.
 - [ ] En `/auth`, la pestaña "CREAR CUENTA" muestra el campo de correo y "INICIAR SESIÓN" lo oculta.
