@@ -16,7 +16,7 @@ export function AuthForm() {
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     login({ name: (user || "PLAYER1").toUpperCase().slice(0, 10) });
-    router.push("/");
+    router.push("/games");
   };
 
   return (
@@ -66,7 +66,7 @@ export function AuthForm() {
           style={{ width: "100%", marginTop: 10 }}
           onClick={() => {
             login(null);
-            router.push("/");
+            router.push("/games");
           }}
         >
           JUGAR COMO INVITADO
