@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AsteroidsCanvas } from "@/components/asteroids-canvas";
 import { useSession } from "@/components/session-provider";
 import type { Game } from "@/lib/data";
 
@@ -15,18 +16,21 @@ export function GamePlayer({ game }: { game: Game }) {
   // user se hidrata tras montar: el nombre editado pisa al de la sesión solo si el usuario lo toca.
   const [editedName, setEditedName] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [runKey, setRunKey] = useState(0);
   const name = editedName ?? user?.name ?? "INVITADO";
+  // Solo asteroids tiene motor real; el resto sigue en mock.
+  const real = game.id === "asteroids";
 
   useEffect(() => {
-    if (over || paused) return;
+    if (real || over || paused) return;
     const t = setInterval(() => setScore((s) => s + Math.floor(10 + Math.random() * 90)), 220);
     return () => clearInterval(t);
-  }, [over, paused]);
+  }, [real, over, paused]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (score > 0 && score % 2500 < 100) setLevel((l) => l + 1);
-  }, [score]);
+    if (!real && score > 0 && score % 2500 < 100) setLevel((l) => l + 1);
+  }, [real, score]);
 
   const endGame = () => setOver(true);
   const restart = () => {
@@ -36,6 +40,7 @@ export function GamePlayer({ game }: { game: Game }) {
     setPaused(false);
     setOver(false);
     setSaved(false);
+    setRunKey((k) => k + 1);
   };
 
   return (
@@ -62,10 +67,22 @@ export function GamePlayer({ game }: { game: Game }) {
           </div>
         </div>
         <div className="hud-actions">
-          <button className="btn yellow" onClick={() => setPaused((p) => !p)}>
+          <button
+            className="btn yellow"
+            onClick={(e) => {
+              e.currentTarget.blur();
+              setPaused((p) => !p);
+            }}
+          >
             {paused ? "REANUDAR" : "PAUSA"}
           </button>
-          <button className="btn magenta" onClick={endGame}>
+          <button
+            className="btn magenta"
+            onClick={(e) => {
+              e.currentTarget.blur();
+              endGame();
+            }}
+          >
             FIN
           </button>
           <Link href={`/games/${game.id}`} className="btn ghost">
@@ -76,13 +93,24 @@ export function GamePlayer({ game }: { game: Game }) {
 
       <div className="crt">
         <div className="crt-screen">
-          <div className="game-arena">
-            <div className="grid-floor"></div>
-            <div className="enemy e1"></div>
-            <div className="enemy e2"></div>
-            <div className="enemy e3"></div>
-            <div className="player-ship"></div>
-          </div>
+          {real ? (
+            <AsteroidsCanvas
+              key={runKey}
+              active={!paused && !over}
+              onScore={setScore}
+              onLives={setLives}
+              onLevel={setLevel}
+              onGameOver={() => setOver(true)}
+            />
+          ) : (
+            <div className="game-arena">
+              <div className="grid-floor"></div>
+              <div className="enemy e1"></div>
+              <div className="enemy e2"></div>
+              <div className="enemy e3"></div>
+              <div className="player-ship"></div>
+            </div>
+          )}
           {paused && (
             <div className="crt-content" style={{ background: "rgba(0,0,0,0.6)", zIndex: 5 }}>
               <div>
