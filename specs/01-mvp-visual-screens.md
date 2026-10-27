@@ -44,14 +44,29 @@ Estructuras que ya existen en `data.jsx`, ahora tipadas en `lib/data.ts`:
 ```ts
 export type Category = "ARCADE" | "PUZZLE" | "SHOOTER" | "VERSUS";
 export type Game = {
-  id: string; title: string; short: string; long: string;
-  cat: Category; cover: string;               // clase CSS, ej. "cover-bricks"
+  id: string;
+  title: string;
+  short: string;
+  long: string;
+  cat: Category;
+  cover: string; // clase CSS, ej. "cover-bricks"
   color: "cyan" | "magenta" | "yellow" | "green";
-  best: number; plays: string;                // plays es texto, ej. "12.4K"
+  best: number;
+  plays: string; // plays es texto, ej. "12.4K"
 };
-export type ScoreRow = { rank: number; name: string; score: number; date: string };
-export type SessionUser = { name: string };   // localStorage "av_user" (JSON | null)
-export type SavedScore = { game: string; score: number; name: string; at: number }; // "av_scores" (array JSON)
+export type ScoreRow = {
+  rank: number;
+  name: string;
+  score: number;
+  date: string;
+};
+export type SessionUser = { name: string }; // localStorage "av_user" (JSON | null)
+export type SavedScore = {
+  game: string;
+  score: number;
+  name: string;
+  at: number;
+}; // "av_scores" (array JSON)
 ```
 
 - `CATS = ["TODOS", ...categorías]`; 8 juegos: bloque-buster, caida, serpentina, gloton, invasores, rocas, ranaria, duelo-pixel (contenido copiado literal del template).
@@ -105,14 +120,14 @@ Estructura: `lib/` y `components/` en la raíz (alias `@/*`). Páginas como Serv
 
 ## Riesgos identificados
 
-| Riesgo | Mitigación |
-| ------ | ---------- |
+| Riesgo                                                         | Mitigación                                                                                                                    |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `cacheComponents` cambia la semántica de render dinámico/caché | Leer `node_modules/next/dist/docs/` antes de escribir páginas; datos mock estáticos, sin `fetch` ni request APIs en servidor. |
-| Mismatch de hidratación al leer `localStorage` | Leer `av_user` en `useEffect` tras montar; el primer render es "sin sesión". |
-| `localStorage` bloqueado o JSON corrupto | try/catch en lectura y escritura, como el template. |
-| `Math.random` en el reproductor rompe SSR/hidratación | Solo se usa dentro de efectos en el cliente, nunca en el render inicial. |
-| Next 16 / React 19.3 difieren de lo que conozco | Consultar la documentación local antes de usar APIs de routing, `params` (asíncronos) o metadata. |
-| Divergencia visual respecto al template | Comparar lado a lado con `Arcade Vault.html` abierto en el navegador al final del plan. |
+| Mismatch de hidratación al leer `localStorage`                 | Leer `av_user` en `useEffect` tras montar; el primer render es "sin sesión".                                                  |
+| `localStorage` bloqueado o JSON corrupto                       | try/catch en lectura y escritura, como el template.                                                                           |
+| `Math.random` en el reproductor rompe SSR/hidratación          | Solo se usa dentro de efectos en el cliente, nunca en el render inicial.                                                      |
+| Next 16 / React 19.3 difieren de lo que conozco                | Consultar la documentación local antes de usar APIs de routing, `params` (asíncronos) o metadata.                             |
+| Divergencia visual respecto al template                        | Comparar lado a lado con `Arcade Vault.html` abierto en el navegador al final del plan.                                       |
 
 ## Qué **no** entra en esta spec
 
