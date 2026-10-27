@@ -2,13 +2,12 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import type { SavedScore, SessionUser } from "@/lib/data";
+import type { SessionUser } from "@/lib/data";
 
 type SessionContextValue = {
   user: SessionUser | null;
   login: (u: SessionUser | null) => void;
   signOut: () => void;
-  saveScore: (entry: Omit<SavedScore, "at">) => void;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -39,15 +38,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, []);
 
-  const saveScore = useCallback((entry: Omit<SavedScore, "at">) => {
-    try {
-      const all = JSON.parse(localStorage.getItem("av_scores") || "[]") as SavedScore[];
-      all.push({ ...entry, at: Date.now() });
-      localStorage.setItem("av_scores", JSON.stringify(all));
-    } catch {}
-  }, []);
-
-  const value = useMemo(() => ({ user, login, signOut, saveScore }), [user, login, signOut, saveScore]);
+  const value = useMemo(() => ({ user, login, signOut }), [user, login, signOut]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { GAMES } from "@/lib/data";
 import type { Game } from "@/lib/data";
 
 type Accent = "cyan" | "magenta" | "yellow" | "green";
@@ -246,7 +245,7 @@ function FeatureIcon({ kind }: { kind: "GAMEPAD" | "FREE" | "TROPHY" | "ROCKET" 
   );
 }
 
-export function Home() {
+export function Home({ games }: { games: Game[] }) {
   useReveal();
   return (
     <div className="home fade-in">
@@ -300,7 +299,7 @@ export function Home() {
         </div>
       </section>
 
-      {/* GAMES PREVIEW */}
+      {/* PREVIEW DE JUEGOS */}
       <section className="home-section" data-reveal>
         <div className="section-head">
           <div className="kicker pixel neon-cyan">{"// 02"}</div>
@@ -308,7 +307,7 @@ export function Home() {
           <div className="section-rule"></div>
         </div>
         <div className="mini-rail">
-          {GAMES.slice(0, 6).map((g) => (
+          {games.slice(0, 6).map((g) => (
             <MiniCard key={g.id} game={g} />
           ))}
         </div>

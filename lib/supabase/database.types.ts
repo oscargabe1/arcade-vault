@@ -39,10 +39,94 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      games: {
+        Row: {
+          category: string
+          color: string
+          cover: string
+          created_at: string
+          id: string
+          long_desc: string
+          short_desc: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          category: string
+          color: string
+          cover: string
+          created_at?: string
+          id: string
+          long_desc: string
+          short_desc: string
+          sort_order: number
+          title: string
+        }
+        Update: {
+          category?: string
+          color?: string
+          cover?: string
+          created_at?: string
+          id?: string
+          long_desc?: string
+          short_desc?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      scores: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: number
+          player_name: string
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: never
+          player_name: string
+          score: number
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: never
+          player_name?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scores_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      leaderboard: {
+        Row: {
+          achieved_at: string | null
+          best_score: number | null
+          game_id: string | null
+          player_name: string | null
+          rank: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scores_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
