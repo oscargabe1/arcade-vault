@@ -1,6 +1,7 @@
 // ===== registry.ts — juegos con motor real; el resto del catálogo sigue en mock =====
 
 import { createAsteroids } from "./asteroids/engine";
+import { createCaida } from "./caida/engine";
 import type { GameFactory } from "./types";
 
 export type RealGame = {
@@ -18,5 +19,12 @@ export const REAL_GAMES: Record<string, RealGame> = {
     height: 600,
     hud: { lives: true, level: true },
     initial: { lives: 3, level: 1 },
+  },
+  caida: {
+    factory: createCaida,
+    width: 800,
+    height: 600,
+    hud: { lives: false, level: true },
+    initial: { lives: 0, level: 1 },
   },
 };
