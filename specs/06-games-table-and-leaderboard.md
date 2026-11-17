@@ -1,6 +1,6 @@
 # SPEC 06 — Tabla `games` y leaderboard real en Supabase
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** SPEC 04, SPEC 05
 > **Date:** 2026-10-27
 > **Objective:** Mover el catálogo de juegos a una tabla `games` de Supabase y reemplazar los leaderboards mock por puntajes reales en una tabla `scores`, guardados solo por jugadores con sesión.

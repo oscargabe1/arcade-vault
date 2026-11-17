@@ -1,6 +1,6 @@
 # SPEC 05 — Portar Asteroids como juego nuevo `asteroids`
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** SPEC 01, SPEC 02
 > **Date:** 2026-10-27
 > **Objective:** Añadir al catálogo un juego nuevo `asteroids` cuyo reproductor (`/games/asteroids/play`) corre el Asteroids real de `references/started-games/02-asteroids/`, portado a un motor TypeScript en un `<canvas>`, conservando el HUD original del canvas y mostrando además el HUD de la plataforma.
