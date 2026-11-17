@@ -16,27 +16,13 @@ import {
   dist,
   rand,
 } from "./entities";
-
-export type AsteroidsCallbacks = {
-  onScore: (score: number) => void;
-  onLives: (lives: number) => void;
-  onLevel: (level: number) => void;
-  onGameOver: (finalScore: number) => void;
-};
-
-export type AsteroidsGame = {
-  setPaused: (paused: boolean) => void; // congela update; el último frame sigue visible
-  destroy: () => void; // cancela rAF y quita listeners
-};
+import type { GameFactory } from "../types";
 
 type State = "playing" | "dead" | "gameover";
 
 const GAME_KEYS = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"];
 
-export function createAsteroids(
-  canvas: HTMLCanvasElement,
-  cb: AsteroidsCallbacks,
-): AsteroidsGame {
+export const createAsteroids: GameFactory = (canvas, cb) => {
   const ctx = canvas.getContext("2d");
   if (!ctx) return { setPaused: () => {}, destroy: () => {} };
 
@@ -105,11 +91,11 @@ export function createAsteroids(
     }
     if (lives !== emittedLives) {
       emittedLives = lives;
-      cb.onLives(lives);
+      cb.onLives?.(lives);
     }
     if (level !== emittedLevel) {
       emittedLevel = level;
-      cb.onLevel(level);
+      cb.onLevel?.(level);
     }
     if (state === "gameover" && !gameOverEmitted) {
       gameOverEmitted = true;
@@ -360,4 +346,4 @@ export function createAsteroids(
       window.removeEventListener("blur", onBlur);
     },
   };
-}
+};
