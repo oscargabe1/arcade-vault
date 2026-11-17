@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { GAMES, seededScores } from "@/lib/data";
+import type { ScoreRow } from "@/lib/data";
+import { getGame, getGameStats, getGames, getLeaderboard } from "@/lib/games";
 
-export function generateStaticParams() {
-  return GAMES.map((g) => ({ id: g.id }));
+export async function generateStaticParams() {
+  return (await getGames()).map((g) => ({ id: g.id }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/games/[id]">): Promise<Metadata> {
   const { id } = await params;
-  const game = GAMES.find((g) => g.id === id);
+  const game = await getGame(id);
   return { title: game ? `${game.title} · Arcade Vault` : "Juego no encontrado · Arcade Vault" };
 }
 
@@ -24,10 +25,9 @@ export default function GameDetailPage({ params }: PageProps<"/games/[id]">) {
 
 async function GameDetail({ params }: Pick<PageProps<"/games/[id]">, "params">) {
   const { id } = await params;
-  const game = GAMES.find((g) => g.id === id);
+  const game = await getGame(id);
   if (!game) notFound();
-
-  const scores = seededScores(id.length * 17 + 3, 10);
+  const stats = await getGameStats(id);
 
   return (
     <div className="av-detail fade-in">
@@ -47,12 +47,12 @@ async function GameDetail({ params }: Pick<PageProps<"/games/[id]">, "params">) 
           <div className="stat-strip">
             <div>
               <div className="l">Partidas</div>
-              <div className="v">{game.plays}</div>
+              <div className="v">{stats.plays.toLocaleString("es-ES")}</div>
             </div>
             <div>
               <div className="l">Mejor global</div>
               <div className="v" style={{ color: "var(--magenta)", textShadow: "0 0 6px rgba(255,0,110,0.5)" }}>
-                {game.best.toLocaleString("es-ES")}
+                {stats.best.toLocaleString("es-ES")}
               </div>
             </div>
             <div>
@@ -76,18 +76,35 @@ async function GameDetail({ params }: Pick<PageProps<"/games/[id]">, "params">) 
       <aside>
         <div className="leaderboard">
           <h3>MEJORES PUNTUACIONES</h3>
-          {scores.map((r, i) => (
-            <div key={r.name} className={"lb-row" + (i === 0 ? " top1" : i === 1 ? " top2" : i === 2 ? " top3" : "")}>
-              <div className="rk">#{String(r.rank).padStart(2, "0")}</div>
-              <div className="pl">
-                {r.name}
-                <div style={{ fontSize: 10, color: "var(--ink-faint)", letterSpacing: "0.1em" }}>{r.date}</div>
-              </div>
-              <div className="sc">{r.score.toLocaleString("es-ES")}</div>
-            </div>
-          ))}
+          <Suspense fallback={null}>
+            <Leaderboard gameId={game.id} />
+          </Suspense>
         </div>
       </aside>
     </div>
   );
+}
+
+async function Leaderboard({ gameId }: { gameId: string }) {
+  let scores: ScoreRow[];
+  try {
+    scores = await getLeaderboard(gameId, 10);
+  } catch {
+    return <div className="lb-empty">NO SE PUDO CARGAR</div>;
+  }
+
+  if (scores.length === 0) {
+    return <div className="lb-empty">SIN PUNTAJES AÚN — SÉ EL PRIMERO</div>;
+  }
+
+  return scores.map((r, i) => (
+    <div key={r.name} className={"lb-row" + (i === 0 ? " top1" : i === 1 ? " top2" : i === 2 ? " top3" : "")}>
+      <div className="rk">#{String(r.rank).padStart(2, "0")}</div>
+      <div className="pl">
+        {r.name}
+        <div style={{ fontSize: 10, color: "var(--ink-faint)", letterSpacing: "0.1em" }}>{r.date}</div>
+      </div>
+      <div className="sc">{r.score.toLocaleString("es-ES")}</div>
+    </div>
+  ));
 }

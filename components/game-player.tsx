@@ -1,23 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { saveScoreAction } from "@/app/games/[id]/play/actions";
 import { AsteroidsCanvas } from "@/components/asteroids-canvas";
 import { useSession } from "@/components/session-provider";
 import type { Game } from "@/lib/data";
 
 export function GamePlayer({ game }: { game: Game }) {
-  const { user, saveScore } = useSession();
+  const { user } = useSession();
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [level, setLevel] = useState(1);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
-  // user se hidrata tras montar: el nombre editado pisa al de la sesión solo si el usuario lo toca.
-  const [editedName, setEditedName] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saving, startSaving] = useTransition();
   const [runKey, setRunKey] = useState(0);
-  const name = editedName ?? user?.name ?? "INVITADO";
+  const name = user?.name ?? "INVITADO";
   // Solo asteroids tiene motor real; el resto sigue en mock.
   const real = game.id === "asteroids";
 
@@ -33,6 +34,17 @@ export function GamePlayer({ game }: { game: Game }) {
   }, [real, score]);
 
   const endGame = () => setOver(true);
+  const save = () => {
+    if (!user) return;
+    setSaveError(null);
+    startSaving(async () => {
+      const res = await saveScoreAction(game.id, user.name, score);
+      startSaving(() => {
+        if (res.ok) setSaved(true);
+        else setSaveError(res.error);
+      });
+    });
+  };
   const restart = () => {
     setScore(0);
     setLives(3);
@@ -40,6 +52,7 @@ export function GamePlayer({ game }: { game: Game }) {
     setPaused(false);
     setOver(false);
     setSaved(false);
+    setSaveError(null);
     setRunKey((k) => k + 1);
   };
 
@@ -137,25 +150,28 @@ export function GamePlayer({ game }: { game: Game }) {
             <h2>FIN DEL JUEGO</h2>
             <div className="final-label">PUNTUACIÓN FINAL</div>
             <div className="final">{score.toLocaleString("es-ES")}</div>
-            {!saved ? (
-              <div className="input-row">
-                <input
-                  value={name}
-                  onChange={(e) => setEditedName(e.target.value.toUpperCase().slice(0, 10))}
-                  placeholder="TUS INICIALES"
-                />
-                <button
-                  className="btn yellow"
-                  onClick={() => {
-                    saveScore({ game: game.id, score, name });
-                    setSaved(true);
-                  }}
-                >
-                  GUARDAR PUNTUACIÓN
-                </button>
-              </div>
-            ) : (
+            {saved ? (
               <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
+            ) : user ? (
+              <>
+                <div className="input-row">
+                  <input value={user.name} readOnly aria-label="Jugador" />
+                  <button className="btn yellow" onClick={save} disabled={saving}>
+                    {saving ? "GUARDANDO…" : saveError ? "REINTENTAR" : "GUARDAR PUNTUACIÓN"}
+                  </button>
+                </div>
+                {saveError && (
+                  <div className="pixel" style={{ fontSize: 10, color: "var(--magenta)", marginTop: 10 }}>
+                    ▸ {saveError}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="pixel" style={{ fontSize: 10, marginTop: 10, letterSpacing: "0.1em" }}>
+                <Link href="/auth" className="neon-cyan">
+                  INICIA SESIÓN PARA GUARDAR
+                </Link>
+              </div>
             )}
             <div className="actions">
               <button className="btn" onClick={restart}>

@@ -42,10 +42,6 @@ export function GameCard({ game }: { game: Game }) {
         <div className="title">{game.title}</div>
         <div className="desc">{game.short}</div>
         <div className="row">
-          <div className="score-badge">
-            <span>MEJOR PUNTUACIÓN</span>
-            <b>{game.best.toLocaleString("es-ES")}</b>
-          </div>
           <Link
             href={href}
             className={"btn " + (game.color === "magenta" ? "magenta" : game.color === "yellow" ? "yellow" : "")}
