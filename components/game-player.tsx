@@ -3,15 +3,19 @@
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { saveScoreAction } from "@/app/games/[id]/play/actions";
-import { AsteroidsCanvas } from "@/components/asteroids-canvas";
+import { GameCanvas } from "@/components/game-canvas";
 import { useSession } from "@/components/session-provider";
 import type { Game } from "@/lib/data";
+import { REAL_GAMES } from "@/lib/games/registry";
 
 export function GamePlayer({ game }: { game: Game }) {
   const { user } = useSession();
+  // Juegos con motor real (registro); el resto sigue en mock.
+  const real = REAL_GAMES[game.id];
+  const initial = real?.initial ?? { lives: 3, level: 1 };
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
-  const [level, setLevel] = useState(1);
+  const [lives, setLives] = useState(initial.lives);
+  const [level, setLevel] = useState(initial.level);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -19,8 +23,6 @@ export function GamePlayer({ game }: { game: Game }) {
   const [saving, startSaving] = useTransition();
   const [runKey, setRunKey] = useState(0);
   const name = user?.name ?? "INVITADO";
-  // Solo asteroids tiene motor real; el resto sigue en mock.
-  const real = game.id === "asteroids";
 
   useEffect(() => {
     if (real || over || paused) return;
@@ -47,8 +49,8 @@ export function GamePlayer({ game }: { game: Game }) {
   };
   const restart = () => {
     setScore(0);
-    setLives(3);
-    setLevel(1);
+    setLives(initial.lives);
+    setLevel(initial.level);
     setPaused(false);
     setOver(false);
     setSaved(false);
@@ -70,14 +72,18 @@ export function GamePlayer({ game }: { game: Game }) {
             <div className="l">Puntuación</div>
             <div className="v">{score.toLocaleString("es-ES")}</div>
           </div>
-          <div className="hud-stat lives">
-            <div className="l">Vidas</div>
-            <div className="v">{"♥ ".repeat(lives).trim() || "—"}</div>
-          </div>
-          <div className="hud-stat level">
-            <div className="l">Nivel</div>
-            <div className="v">{String(level).padStart(2, "0")}</div>
-          </div>
+          {(!real || real.hud.lives) && (
+            <div className="hud-stat lives">
+              <div className="l">Vidas</div>
+              <div className="v">{"♥ ".repeat(lives).trim() || "—"}</div>
+            </div>
+          )}
+          {(!real || real.hud.level) && (
+            <div className="hud-stat level">
+              <div className="l">Nivel</div>
+              <div className="v">{String(level).padStart(2, "0")}</div>
+            </div>
+          )}
         </div>
         <div className="hud-actions">
           <button
@@ -107,8 +113,11 @@ export function GamePlayer({ game }: { game: Game }) {
       <div className="crt">
         <div className="crt-screen">
           {real ? (
-            <AsteroidsCanvas
+            <GameCanvas
               key={runKey}
+              factory={real.factory}
+              width={real.width}
+              height={real.height}
               active={!paused && !over}
               onScore={setScore}
               onLives={setLives}

@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import {
-  createAsteroids,
-  type AsteroidsCallbacks,
-  type AsteroidsGame,
-} from "@/lib/games/asteroids/engine";
+import type { GameCallbacks, GameFactory, GameHandle } from "@/lib/games/types";
 
-type Props = AsteroidsCallbacks & { active: boolean }; // active = !paused && !over
+type Props = GameCallbacks & {
+  factory: GameFactory;
+  width: number;
+  height: number;
+  active: boolean; // !paused && !over
+};
 
-export function AsteroidsCanvas({
+export function GameCanvas({
+  factory,
+  width,
+  height,
   active,
   onScore,
   onLives,
@@ -17,14 +21,15 @@ export function AsteroidsCanvas({
   onGameOver,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const gameRef = useRef<AsteroidsGame | null>(null);
+  const gameRef = useRef<GameHandle | null>(null);
   // latest-ref: el motor se crea una vez y siempre llama a los callbacks más recientes
-  const cbRef = useRef<AsteroidsCallbacks>({
+  const cbRef = useRef<GameCallbacks>({
     onScore,
     onLives,
     onLevel,
     onGameOver,
   });
+  const factoryRef = useRef(factory);
 
   useEffect(() => {
     cbRef.current = { onScore, onLives, onLevel, onGameOver };
@@ -33,10 +38,10 @@ export function AsteroidsCanvas({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const game = createAsteroids(canvas, {
+    const game = factoryRef.current(canvas, {
       onScore: (s) => cbRef.current.onScore(s),
-      onLives: (l) => cbRef.current.onLives(l),
-      onLevel: (l) => cbRef.current.onLevel(l),
+      onLives: (l) => cbRef.current.onLives?.(l),
+      onLevel: (l) => cbRef.current.onLevel?.(l),
       onGameOver: (s) => cbRef.current.onGameOver(s),
     });
     gameRef.current = game;
@@ -53,8 +58,8 @@ export function AsteroidsCanvas({
   return (
     <canvas
       ref={canvasRef}
-      width={800}
-      height={600}
+      width={width}
+      height={height}
       style={{ display: "block", width: "100%", height: "100%" }}
     />
   );
